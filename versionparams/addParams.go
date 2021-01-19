@@ -11,7 +11,7 @@ import (
 func AddParams(ps *param.PSet) error {
 	ps.Add("version", psetter.Nil{},
 		"show the version details for this program",
-		param.PostAction(paction.ReportAndExit(version.All())),
+		param.PostAction(paction.ReportAndExit(version.All()+"\n")),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
 	)
 
