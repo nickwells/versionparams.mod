@@ -2,6 +2,7 @@ package versionparams
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/nickwells/location.mod/location"
 	"github.com/nickwells/param.mod/v5/param"
@@ -59,6 +60,7 @@ func AddParams(ps *param.PSet) error {
 				default:
 					fmt.Fprintln(p.StdWriter(), "bad version part: "+vsnPart)
 				}
+				os.Exit(0)
 				return nil
 			}),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
