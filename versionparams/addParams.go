@@ -38,6 +38,7 @@ func AddParams(ps *param.PSet) error {
 				vpBuildDate: "show the build date",
 				vpBuiltBy:   "show the name of the user who built the program",
 			},
+			AllowInvalidInitialValue: true,
 		},
 		"show the named part of the version",
 		param.PostAction(
