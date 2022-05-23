@@ -3,6 +3,7 @@ package versionparams
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"runtime/debug"
 
@@ -13,7 +14,7 @@ import (
 	"github.com/nickwells/param.mod/v5/param/psetter"
 )
 
-var vsnPart string
+var vsnPart []string
 
 const (
 	vpGoVersion = "go-version"
@@ -29,23 +30,8 @@ const (
 	modTypeMain = "M"
 )
 
-// moduleInfo returns a string describing the module
-func moduleInfo(m debug.Module) string {
-	mi := "     Path: " + m.Path
-	if m.Version != "" {
-		mi += "\n Version: " + m.Version
-	}
-	if m.Sum != "" {
-		mi += "\nCheckSum: " + m.Sum
-	}
-	if m.Replace != nil {
-		mi += "\nReplaced by:\n" + moduleInfo(*m.Replace)
-	}
-	return mi
-}
-
-// depCols returns a set of columns for the dependencies section of the
-// report with the column widths set to the maximum observed value
+// depCols returns a set of columns for the modules section of the report
+// with the column widths set to the maximum observed value
 func depCols(bi *debug.BuildInfo) []*col.Col {
 	var (
 		colWidthPath    = len(bi.Main.Path)
@@ -84,61 +70,71 @@ func depCols(bi *debug.BuildInfo) []*col.Col {
 }
 
 // showGoVersion shows the Go Version used to build this executable
-func showGoVersion(bi *debug.BuildInfo, p *param.ByName) error {
+func showGoVersion(bi *debug.BuildInfo, w io.Writer) error {
 	if bi == nil {
 		return errors.New("Could not show the Go Version - no build info")
 	}
-	fmt.Fprintln(p.StdWriter(), bi.GoVersion)
+	fmt.Fprintln(w, "Built with Go Version: ", bi.GoVersion)
 	return nil
 }
 
 // showPath shows the Path of this executable
-func showPath(bi *debug.BuildInfo, p *param.ByName) error {
+func showPath(bi *debug.BuildInfo, w io.Writer) error {
 	if bi == nil {
 		return errors.New("Could not show the Path - no build info")
 	}
-	fmt.Fprintln(p.StdWriter(), bi.Path)
+	fmt.Fprintln(w, "Path: ", bi.Path)
 	return nil
 }
 
 // showModules shows the module details of this executable
-func showModules(bi *debug.BuildInfo, p *param.ByName) error {
+func showModules(bi *debug.BuildInfo, w io.Writer) error {
 	if bi == nil {
-		return errors.New("Could not show the dependencies - no build info")
+		return errors.New("Could not show the modules - no build info")
 	}
-	fmt.Fprintln(p.StdWriter(), "Modules:")
+
+	fmt.Fprintln(w, "Modules:")
+
 	cols := depCols(bi)
-	rpt := col.NewReport(nil, p.StdWriter(),
+	rpt := col.NewReport(nil, w,
 		col.New(&colfmt.String{}, "Type"), cols...)
 	_ = rpt.PrintRow(modTypeMain, bi.Main.Path, bi.Main.Version, bi.Main.Sum)
+
 	for _, dep := range bi.Deps {
 		modType := modTypeDep
 		if dep.Replace != nil {
 			modType = modTypeRepl
 		}
+
 		_ = rpt.PrintRow(modType, dep.Path, dep.Version, dep.Sum)
+
 		if dep.Replace != nil {
 			repl := dep.Replace
 			_ = rpt.PrintRow(modTypeDep,
 				replIntro+repl.Path, repl.Version, repl.Sum)
 		}
 	}
+
 	return nil
 }
 
 // showSettings shows the environment settings of this executable
-func showSettings(bi *debug.BuildInfo, p *param.ByName) error {
+func showSettings(bi *debug.BuildInfo, w io.Writer) error {
+	if bi == nil {
+		return errors.New("Could not show the build settings - no build info")
+	}
+	fmt.Fprintln(w, "Build Settings:")
 	maxKey := 0
 	for _, s := range bi.Settings {
 		if len(s.Key) > maxKey {
 			maxKey = len(s.Key)
 		}
 	}
-	rpt := col.NewReport(nil, p.StdWriter(),
+	rpt := col.NewReport(nil, w,
 		col.New(&colfmt.String{StrJust: col.Right, W: maxKey},
 			"Key"),
 		col.New(&colfmt.String{}, "Value"))
-	fmt.Fprintln(p.StdWriter(), "Build Settings:")
+	fmt.Fprintln(w, "Build Settings:")
 	for _, s := range bi.Settings {
 		_ = rpt.PrintRow(s.Key, s.Value)
 	}
@@ -146,29 +142,34 @@ func showSettings(bi *debug.BuildInfo, p *param.ByName) error {
 }
 
 // showVersionPart shows the selected part of the version details
-func showVersionPart(_ location.L, p *param.ByName, _ []string) error {
+func showVersionPart(w io.Writer) error {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		fmt.Fprintln(p.StdWriter(), noBuildInfo)
-		os.Exit(1)
+		return errors.New(noBuildInfo)
 	}
 
 	var err error
-	switch vsnPart {
-	case vpGoVersion:
-		err = showGoVersion(bi, p)
-	case vpPath:
-		err = showPath(bi, p)
-	case vpMods:
-		err = showModules(bi, p)
-	case vpSettings:
-		err = showSettings(bi, p)
-	default:
-		badVsnPart := "bad version part: " + vsnPart
-		err = errors.New(badVsnPart)
-		fmt.Fprintln(p.StdWriter(), badVsnPart)
+	partShown := false
+	for _, part := range vsnPart {
+		switch part {
+		case vpGoVersion:
+			err = showGoVersion(bi, w)
+		case vpPath:
+			err = showPath(bi, w)
+		case vpMods:
+			err = showModules(bi, w)
+		case vpSettings:
+			err = showSettings(bi, w)
+		default:
+			badVsnPart := "bad version part: " + part
+			err = errors.New(badVsnPart)
+			fmt.Fprintln(w, badVsnPart)
+		}
+		partShown = true
 	}
-	os.Exit(0)
+	if partShown {
+		os.Exit(0)
+	}
 	return err
 }
 
@@ -190,7 +191,7 @@ func AddParams(ps *param.PSet) error {
 	)
 
 	ps.Add("version-part",
-		psetter.Enum{
+		psetter.EnumList{
 			Value: &vsnPart,
 			AllowedVals: psetter.AllowedVals{
 				vpGoVersion: "show the version of Go that produced this binary",
@@ -198,12 +199,14 @@ func AddParams(ps *param.PSet) error {
 				vpMods:      "show the module dependencies",
 				vpSettings:  "show other information about the build",
 			},
-			AllowInvalidInitialValue: true,
 		},
 		"show the named part of the version",
-		param.PostAction(showVersionPart),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
 	)
+
+	ps.AddFinalCheck(func() error {
+		return showVersionPart(ps.StdW())
+	})
 
 	return nil
 }
