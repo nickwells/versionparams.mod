@@ -19,6 +19,7 @@ var vsnPart []string
 const (
 	vpGoVersion = "go-version"
 	vpPath      = "path"
+	vpMain      = "main"
 	vpMods      = "modules"
 	vpSettings  = "build-settings"
 
@@ -84,6 +85,17 @@ func showPath(bi *debug.BuildInfo, w io.Writer) error {
 		return errors.New("Could not show the Path - no build info")
 	}
 	fmt.Fprintln(w, "Path: ", bi.Path)
+	return nil
+}
+
+// showMain shows the details of the main module of this executable
+func showMain(bi *debug.BuildInfo, w io.Writer) error {
+	if bi == nil {
+		return errors.New("Could not show the modules - no build info")
+	}
+
+	fmt.Fprintln(w, bi.Main.Path, bi.Main.Version, bi.Main.Sum)
+
 	return nil
 }
 
@@ -156,6 +168,8 @@ func showVersionPart(w io.Writer) error {
 			err = showGoVersion(bi, w)
 		case vpPath:
 			err = showPath(bi, w)
+		case vpMain:
+			err = showMain(bi, w)
 		case vpMods:
 			err = showModules(bi, w)
 		case vpSettings:
@@ -196,6 +210,7 @@ func AddParams(ps *param.PSet) error {
 			AllowedVals: psetter.AllowedVals{
 				vpGoVersion: "show the version of Go that produced this binary",
 				vpPath:      "show the path of the main package",
+				vpMain:      "show the version of the main module",
 				vpMods:      "show the module dependencies",
 				vpSettings:  "show other information about the build",
 			},
