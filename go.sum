@@ -16,8 +16,8 @@ github.com/nickwells/mathutil.mod/v2 v2.0.3 h1:NufKwLV0zcMCUhllfgoaLZgwevZfo7O3S
 github.com/nickwells/mathutil.mod/v2 v2.0.3/go.mod h1:aC49B0tadhToVfsP33Hz4yjRJ87q+IEbXeY0/EXjGwg=
 github.com/nickwells/pager.mod v1.0.11 h1:actfWhNh1TPtRpMPwJcRvYeuL2iRd+JQ44l+4KKsoJg=
 github.com/nickwells/pager.mod v1.0.11/go.mod h1:rRmwJHKd/xaSpi/xqJv7P7IJUtFeoJ9s/8yoJ+mh+tM=
-github.com/nickwells/param.mod/v5 v5.15.3 h1:5gQTOa+ML+JfOCsJPjgfcXpYKUQ44jzz8FYuU4JJWMc=
-github.com/nickwells/param.mod/v5 v5.15.3/go.mod h1:SWNXG3fsGgh8W6+++kfptjKHVfDvWYk4oy0YjvNN4/g=
+github.com/nickwells/param.mod/v5 v5.15.4 h1:4dsXkwohMOMtYaPHtM11cDTBA92Mk2af2yhH05SVXDM=
+github.com/nickwells/param.mod/v5 v5.15.4/go.mod h1:9WBD8RUMvvAQtIV9KorGG9XpJdbOTV5iBUeke+Nomas=
 github.com/nickwells/strdist.mod v1.1.8 h1:zDaosOm1+nVdjeFZcEzqGfXUqVOAp9MJFya8MrlHm7k=
 github.com/nickwells/strdist.mod v1.1.8/go.mod h1:/w8HuJ7vwkF16QO84JmvcSSrTWDTaasmzKZv20iQB0U=
 github.com/nickwells/tempus.mod v1.0.1 h1:ZYWXemio4k89MvKyH98uvcnf4nkRy1k5tCSTSeob80Y=
@@ -27,8 +27,8 @@ github.com/nickwells/testhelper.mod/v2 v2.1.0 h1:dvY6icCWX8Lx5MOt01P4aC/0olap8ug
 github.com/nickwells/twrap.mod v1.4.20 h1:xS3AymHdKMj2sM51tsMho+lZSoi6oiSsTQqoK90s6MQ=
 github.com/nickwells/twrap.mod v1.4.20/go.mod h1:7xQ6YVUuBP28eoqYmKw6PSWad9aCeAjekz5540MQVNU=
 github.com/nickwells/xdg.mod v1.0.9 h1:IQhytP6QBCC2xrSVXTE0GDbYJSD8E25H6sSqd7jtCHA=
-golang.org/x/exp v0.0.0-20230130200758-8bd7c9d05862 h1:z+o+cpYvJXi/DDN1avT8Ty6ebcTFA8XU8b0AVrE3coE=
-golang.org/x/exp v0.0.0-20230130200758-8bd7c9d05862/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
+golang.org/x/exp v0.0.0-20230131160201-f062dba9d201 h1:BEABXpNXLEz0WxtA+6CQIz2xkg80e+1zrhWyMcq8VzE=
+golang.org/x/exp v0.0.0-20230131160201-f062dba9d201/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
 golang.org/x/sys v0.4.0 h1:Zr2JFtRQNX3BCZ8YtxRE9hNJYC8J6I1MVbMg6owUp18=
 golang.org/x/sys v0.4.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.4.0 h1:O7UWfv5+A2qiuulQk30kVinPoMtoIPeVaKLEgLpVkvg=
