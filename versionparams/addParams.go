@@ -107,7 +107,7 @@ func showPath(w io.Writer, bi *debug.BuildInfo) {
 
 // showMain shows the details of the main module of this executable
 func showMain(w io.Writer, bi *debug.BuildInfo) {
-	prompt := "Module, Version"
+	prompt := "Version"
 	if bi.Main.Sum != "" {
 		prompt += ", Checksum"
 	}
@@ -116,7 +116,7 @@ func showMain(w io.Writer, bi *debug.BuildInfo) {
 		prompt = ""
 	}
 
-	fmt.Fprintln(w, prompt+bi.Main.Path, bi.Main.Version, bi.Main.Sum)
+	fmt.Fprintln(w, prompt+bi.Main.Version, bi.Main.Sum)
 }
 
 // showModules shows the module details of this executable
@@ -280,6 +280,9 @@ func AddParams(ps *param.PSet) error {
 	)
 
 	ps.AddFinalCheck(func() error {
+		if shortDisplay && len(vsnPart) == 0 {
+			vsnPart = append(vsnPart, vpMain)
+		}
 		return showVersion(ps.StdW())
 	})
 
