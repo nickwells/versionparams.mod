@@ -228,14 +228,14 @@ func AddParams(ps *param.PSet) error {
 		paramNameVersionPartShort = "version-part-short"
 	)
 
-	defaultParts := []string{vpGoVersion, vpPath, vpMain, vpMods, vpSettings}
+	fullParts := []string{vpGoVersion, vpPath, vpMain, vpMods, vpSettings}
 
 	ps.Add(paramNameVersion, psetter.Nil{},
 		"show the complete version details for this program"+
 			" in the default format",
 		param.PostAction(
 			func(_ location.L, p *param.ByName, _ []string) error {
-				vsnPart = append(vsnPart, defaultParts...)
+				vsnPart = append(vsnPart, vpMain)
 				return nil
 			}),
 		param.SeeAlso(paramNameVersionPart),
@@ -261,7 +261,7 @@ func AddParams(ps *param.PSet) error {
 				"build-flags": []string{vpSettings},
 				"build":       []string{vpSettings},
 				"settings":    []string{vpSettings},
-				"default":     defaultParts,
+				"full":        fullParts,
 			},
 		},
 		"show only the named parts of the version",
