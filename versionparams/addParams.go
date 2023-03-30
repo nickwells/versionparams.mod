@@ -265,6 +265,7 @@ func AddParams(ps *param.PSet) error {
 			},
 		},
 		"show only the named parts of the version",
+		param.AltNames("version-p"),
 		param.SeeAlso(paramNameVersionPartShort),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
 	)
@@ -275,6 +276,7 @@ func AddParams(ps *param.PSet) error {
 			" prompts. This is more useful if you want to use the value"+
 			" as you won't need to strip out the other text. Note that"+
 			" there is no short form of the '"+vpRaw+"' form.",
+		param.AltNames("version-short", "version-s"),
 		param.SeeAlso(paramNameVersionPart),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
 	)
