@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/nickwells/col.mod/v3 v3.0.13
 	github.com/nickwells/location.mod v1.2.25
-	github.com/nickwells/param.mod/v5 v5.15.9
+	github.com/nickwells/param.mod/v5 v5.16.0
 )
 
 require github.com/nickwells/tempus.mod v1.0.2 // indirect
@@ -21,6 +21,6 @@ require (
 	github.com/nickwells/strdist.mod v1.1.9 // indirect
 	github.com/nickwells/twrap.mod v1.5.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/term v0.6.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/term v0.7.0 // indirect
 )
