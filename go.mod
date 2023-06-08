@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/nickwells/col.mod/v3 v3.0.15
 	github.com/nickwells/location.mod v1.2.26
-	github.com/nickwells/param.mod/v5 v5.16.2
+	github.com/nickwells/param.mod/v5 v5.18.0
 )
 
 require github.com/nickwells/tempus.mod v1.0.2 // indirect
