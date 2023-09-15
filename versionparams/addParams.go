@@ -10,22 +10,24 @@ import (
 	"github.com/nickwells/col.mod/v3/col"
 	"github.com/nickwells/col.mod/v3/col/colfmt"
 	"github.com/nickwells/location.mod/location"
-	"github.com/nickwells/param.mod/v5/param"
-	"github.com/nickwells/param.mod/v5/param/psetter"
+	"github.com/nickwells/param.mod/v6/param"
+	"github.com/nickwells/param.mod/v6/psetter"
 )
 
+type vsnPartName string
+
 var (
-	vsnPart      []string
+	vsnPart      []vsnPartName
 	shortDisplay bool
 )
 
 const (
-	vpGoVersion = "go-version"
-	vpPath      = "path"
-	vpMain      = "main"
-	vpMods      = "modules"
-	vpSettings  = "build-settings"
-	vpRaw       = "raw"
+	vpGoVsn    vsnPartName = "go-version"
+	vpPath     vsnPartName = "path"
+	vpMain     vsnPartName = "main"
+	vpMods     vsnPartName = "modules"
+	vpSettings vsnPartName = "build-settings"
+	vpRaw      vsnPartName = "raw"
 
 	noBuildInfo = "Build information not available"
 
@@ -34,17 +36,6 @@ const (
 	modTypeRepl = "r"
 	modTypeMain = "M"
 )
-
-type versionPartShowFunc func(io.Writer, *debug.BuildInfo)
-
-var vsnPartShowFuncMap = map[string]versionPartShowFunc{
-	vpGoVersion: showGoVersion,
-	vpPath:      showPath,
-	vpMain:      showMain,
-	vpMods:      showModules,
-	vpSettings:  showSettings,
-	vpRaw:       showRaw,
-}
 
 // depCols returns a set of columns for the modules section of the report
 // with the column widths set to the maximum observed value
@@ -191,6 +182,17 @@ func showRaw(w io.Writer, bi *debug.BuildInfo) {
 // requested then just those parts are shown otherwise the full default
 // version info is displayed
 func showVersion(w io.Writer) error {
+	type versionPartShowFunc func(io.Writer, *debug.BuildInfo)
+
+	vsnPartShowFuncMap := map[vsnPartName]versionPartShowFunc{
+		vpGoVsn:    showGoVersion,
+		vpPath:     showPath,
+		vpMain:     showMain,
+		vpMods:     showModules,
+		vpSettings: showSettings,
+		vpRaw:      showRaw,
+	}
+
 	if len(vsnPart) == 0 {
 		return nil
 	}
@@ -200,7 +202,7 @@ func showVersion(w io.Writer) error {
 		return errors.New(noBuildInfo)
 	}
 
-	shown := make(map[string]bool, len(vsnPart))
+	shown := make(map[vsnPartName]bool, len(vsnPart))
 	for _, part := range vsnPart {
 		if shown[part] {
 			continue
@@ -210,7 +212,7 @@ func showVersion(w io.Writer) error {
 		var f versionPartShowFunc
 		var ok bool
 		if f, ok = vsnPartShowFuncMap[part]; !ok {
-			return errors.New("bad version part: " + part)
+			return errors.New("bad version part: " + string(part))
 		}
 
 		f(w, bi)
@@ -228,7 +230,13 @@ func AddParams(ps *param.PSet) error {
 		paramNameVersionPartShort = "version-part-short"
 	)
 
-	fullParts := []string{vpGoVersion, vpPath, vpMain, vpMods, vpSettings}
+	fullParts := []vsnPartName{
+		vpGoVsn,
+		vpPath,
+		vpMain,
+		vpMods,
+		vpSettings,
+	}
 
 	ps.Add(paramNameVersion, psetter.Nil{},
 		"show the complete version details for this program"+
@@ -243,24 +251,25 @@ func AddParams(ps *param.PSet) error {
 	)
 
 	ps.Add(paramNameVersionPart,
-		psetter.EnumList{
+		psetter.EnumList[vsnPartName]{
 			Value: &vsnPart,
-			AllowedVals: psetter.AllowedVals{
-				vpGoVersion: "show the version of Go used to make this program",
-				vpPath:      "show the path of the main package",
-				vpMain:      "show the version of the main module",
-				vpMods:      "show the module dependencies",
-				vpSettings:  "show the settings used to make this program",
-				vpRaw:       "show the full build information",
+			AllowedVals: psetter.AllowedVals[vsnPartName]{
+				vpGoVsn:    "show the Go version used to make the program",
+				vpPath:     "show the path of the main package",
+				vpMain:     "show the version of the main module",
+				vpMods:     "show the module dependencies",
+				vpSettings: "show the settings used to make the program",
+				vpRaw:      "show the full build information",
 			},
-			Aliases: psetter.Aliases{
-				"go":          []string{vpGoVersion},
-				"go-vsn":      []string{vpGoVersion},
-				"mods":        []string{vpMods},
-				"dep":         []string{vpMods},
-				"build-flags": []string{vpSettings},
-				"build":       []string{vpSettings},
-				"settings":    []string{vpSettings},
+			Aliases: psetter.Aliases[vsnPartName]{
+				"go":          []vsnPartName{vpGoVsn},
+				"go-vsn":      []vsnPartName{vpGoVsn},
+				"mods":        []vsnPartName{vpMods},
+				"dep":         []vsnPartName{vpMods},
+				"build-flags": []vsnPartName{vpSettings},
+				"build":       []vsnPartName{vpSettings},
+				"settings":    []vsnPartName{vpSettings},
+				"all":         fullParts,
 				"full":        fullParts,
 			},
 		},
@@ -275,7 +284,7 @@ func AddParams(ps *param.PSet) error {
 		"show the version parts in simplified form, without headings and"+
 			" prompts. This is more useful if you want to use the value"+
 			" as you won't need to strip out the other text. Note that"+
-			" there is no short form of the '"+vpRaw+"' form.",
+			" there is no short form of the '"+string(vpRaw)+"' form.",
 		param.AltNames("version-short", "version-s"),
 		param.SeeAlso(paramNameVersionPart),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
