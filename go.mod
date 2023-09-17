@@ -8,6 +8,7 @@ require (
 	github.com/nickwells/col.mod/v3 v3.0.16
 	github.com/nickwells/location.mod v1.2.27
 	github.com/nickwells/param.mod/v6 v6.0.0
+	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 )
 
 require github.com/nickwells/tempus.mod v1.0.4 // indirect
@@ -22,7 +23,6 @@ require (
 	github.com/nickwells/pager.mod v1.0.11 // indirect
 	github.com/nickwells/strdist.mod v1.1.12 // indirect
 	github.com/nickwells/twrap.mod v1.5.3 // indirect
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/term v0.12.0 // indirect
 )

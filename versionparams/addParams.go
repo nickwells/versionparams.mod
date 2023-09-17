@@ -1,25 +1,21 @@
 package versionparams
 
 import (
-	"errors"
-	"fmt"
-	"io"
-	"os"
-	"runtime/debug"
-
-	"github.com/nickwells/col.mod/v3/col"
-	"github.com/nickwells/col.mod/v3/col/colfmt"
 	"github.com/nickwells/location.mod/location"
 	"github.com/nickwells/param.mod/v6/param"
 	"github.com/nickwells/param.mod/v6/psetter"
+	"golang.org/x/exp/slices"
 )
+
+var showVsn = struct {
+	parts        []vsnPartName
+	shortDisplay bool
+
+	modFilts filter
+	bldFilts filter
+}{}
 
 type vsnPartName string
-
-var (
-	vsnPart      []vsnPartName
-	shortDisplay bool
-)
 
 const (
 	vpGoVsn    vsnPartName = "go-version"
@@ -28,206 +24,23 @@ const (
 	vpMods     vsnPartName = "modules"
 	vpSettings vsnPartName = "build-settings"
 	vpRaw      vsnPartName = "raw"
-
-	noBuildInfo = "Build information not available"
-
-	replIntro   = "   "
-	modTypeDep  = "D"
-	modTypeRepl = "r"
-	modTypeMain = "M"
 )
 
-// depCols returns a set of columns for the modules section of the report
-// with the column widths set to the maximum observed value
-func depCols(bi *debug.BuildInfo) []*col.Col {
-	var (
-		colWidthPath    = len(bi.Main.Path)
-		colWidthVersion = len(bi.Main.Version)
-		colWidthSum     = len(bi.Main.Sum)
-	)
-	for _, d := range bi.Deps {
-		if colWidthPath < len(d.Path) {
-			colWidthPath = len(d.Path)
-		}
-		if colWidthVersion < len(d.Version) {
-			colWidthVersion = len(d.Version)
-		}
-		if colWidthSum < len(d.Sum) {
-			colWidthSum = len(d.Sum)
-		}
-		if d.Replace != nil {
-			replPathLen := len(d.Replace.Path) + len(replIntro)
-			if colWidthPath < replPathLen {
-				colWidthPath = replPathLen
-			}
-			if colWidthVersion < len(d.Replace.Version) {
-				colWidthVersion = len(d.Replace.Version)
-			}
-			if colWidthSum < len(d.Replace.Sum) {
-				colWidthSum = len(d.Replace.Sum)
-			}
-		}
-	}
-
-	return []*col.Col{
-		col.New(&colfmt.String{W: colWidthPath}, "Path"),
-		col.New(&colfmt.String{W: colWidthVersion}, "Version"),
-		col.New(&colfmt.String{W: colWidthSum}, "CheckSum"),
-	}
-}
-
-// showGoVersion shows the Go Version used to build this executable
-func showGoVersion(w io.Writer, bi *debug.BuildInfo) {
-	prompt := "Built with Go Version: "
-	if shortDisplay {
-		prompt = ""
-	}
-
-	fmt.Fprintln(w, prompt+bi.GoVersion)
-}
-
-// showPath shows the Path of this executable
-func showPath(w io.Writer, bi *debug.BuildInfo) {
-	prompt := "Path: "
-	if shortDisplay {
-		prompt = ""
-	}
-
-	fmt.Fprintln(w, prompt+bi.Path)
-}
-
-// showMain shows the details of the main module of this executable
-func showMain(w io.Writer, bi *debug.BuildInfo) {
-	prompt := "Version"
-	if bi.Main.Sum != "" {
-		prompt += ", Checksum"
-	}
-	prompt += ": "
-	if shortDisplay {
-		prompt = ""
-	}
-
-	fmt.Fprintln(w, prompt+bi.Main.Version, bi.Main.Sum)
-}
-
-// showModules shows the module details of this executable
-func showModules(w io.Writer, bi *debug.BuildInfo) {
-	if !shortDisplay {
-		fmt.Fprintln(w, "Modules:")
-	}
-
-	cols := depCols(bi)
-
-	hdr := col.NewHeaderOrPanic()
-	if shortDisplay {
-		col.HdrOptDontPrint(hdr)
-	}
-
-	rpt := col.NewReport(hdr, w,
-		col.New(&colfmt.String{}, "Type"), cols...)
-	_ = rpt.PrintRow(modTypeMain, bi.Main.Path, bi.Main.Version, bi.Main.Sum)
-
-	for _, dep := range bi.Deps {
-		modType := modTypeDep
-		if dep.Replace != nil {
-			modType = modTypeRepl
-		}
-
-		_ = rpt.PrintRow(modType, dep.Path, dep.Version, dep.Sum)
-
-		if dep.Replace != nil {
-			repl := dep.Replace
-			_ = rpt.PrintRow(modTypeDep,
-				replIntro+repl.Path, repl.Version, repl.Sum)
-		}
-	}
-}
-
-// showSettings shows the build settings of this executable
-func showSettings(w io.Writer, bi *debug.BuildInfo) {
-	if !shortDisplay {
-		fmt.Fprintln(w, "Build Settings:")
-	}
-
-	maxKey := 0
-	for _, s := range bi.Settings {
-		if len(s.Key) > maxKey {
-			maxKey = len(s.Key)
-		}
-	}
-
-	keyJust := col.Right
-
-	hdr := col.NewHeaderOrPanic()
-	if shortDisplay {
-		col.HdrOptDontPrint(hdr)
-		keyJust = col.Left
-	}
-
-	rpt := col.NewReport(hdr, w,
-		col.New(&colfmt.String{StrJust: keyJust, W: maxKey}, "Key"),
-		col.New(&colfmt.String{}, "Value"))
-
-	for _, s := range bi.Settings {
-		_ = rpt.PrintRow(s.Key, s.Value)
-	}
-}
-
-// showRaw shows the build info in raw form
-func showRaw(w io.Writer, bi *debug.BuildInfo) {
-	fmt.Fprintln(w, bi)
-}
-
-// showVersion shows the version details, if specific parts have been
-// requested then just those parts are shown otherwise the full default
-// version info is displayed
-func showVersion(w io.Writer) error {
-	type versionPartShowFunc func(io.Writer, *debug.BuildInfo)
-
-	vsnPartShowFuncMap := map[vsnPartName]versionPartShowFunc{
-		vpGoVsn:    showGoVersion,
-		vpPath:     showPath,
-		vpMain:     showMain,
-		vpMods:     showModules,
-		vpSettings: showSettings,
-		vpRaw:      showRaw,
-	}
-
-	if len(vsnPart) == 0 {
-		return nil
-	}
-
-	bi, ok := debug.ReadBuildInfo()
-	if !ok {
-		return errors.New(noBuildInfo)
-	}
-
-	shown := make(map[vsnPartName]bool, len(vsnPart))
-	for _, part := range vsnPart {
-		if shown[part] {
-			continue
-		}
-		shown[part] = true
-
-		var f versionPartShowFunc
-		var ok bool
-		if f, ok = vsnPartShowFuncMap[part]; !ok {
-			return errors.New("bad version part: " + string(part))
-		}
-
-		f(w, bi)
-	}
-
-	os.Exit(0)
-	return nil
-}
+const GroupName = "version-details"
 
 // AddParams will add parameters to the passed param.PSet
 func AddParams(ps *param.PSet) error {
+	ps.AddGroup(GroupName,
+		"parameters relating to program version information."+
+			" You can control which parts of the version"+
+			" information are shown.")
+
 	const (
-		paramNameVersion          = "version"
-		paramNameVersionPart      = "version-part"
-		paramNameVersionPartShort = "version-part-short"
+		paramNameVersion           = "version"
+		paramNameVersionPart       = "version-part"
+		paramNameVersionPartShort  = "version-part-short"
+		paramNameVersionModuleFltr = "version-module-filter"
+		paramNameVersionBuildFltr  = "version-build-filter"
 	)
 
 	fullParts := []vsnPartName{
@@ -243,16 +56,17 @@ func AddParams(ps *param.PSet) error {
 			" in the default format",
 		param.PostAction(
 			func(_ location.L, p *param.ByName, _ []string) error {
-				vsnPart = append(vsnPart, vpMain)
+				showVsn.parts = append(showVsn.parts, vpMain)
 				return nil
 			}),
 		param.SeeAlso(paramNameVersionPart),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
+		param.GroupName(GroupName),
 	)
 
 	ps.Add(paramNameVersionPart,
 		psetter.EnumList[vsnPartName]{
-			Value: &vsnPart,
+			Value: &showVsn.parts,
 			AllowedVals: psetter.AllowedVals[vsnPartName]{
 				vpGoVsn:    "show the Go version used to make the program",
 				vpPath:     "show the path of the main package",
@@ -277,23 +91,95 @@ func AddParams(ps *param.PSet) error {
 		param.AltNames("version-p"),
 		param.SeeAlso(paramNameVersionPartShort),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
+		param.GroupName(GroupName),
 	)
 
 	ps.Add(paramNameVersionPartShort,
-		psetter.Bool{Value: &shortDisplay},
+		psetter.Bool{Value: &showVsn.shortDisplay},
 		"show the version parts in simplified form, without headings and"+
 			" prompts. This is more useful if you want to use the value"+
 			" as you won't need to strip out the other text. Note that"+
-			" there is no short form of the '"+string(vpRaw)+"' form.",
+			" there is no short form of the '"+string(vpRaw)+"' form."+
+			"\n\n"+
+			"If this value is set and no version parts have been"+
+			" chosen, the "+string(vpMain)+" part will be shown",
 		param.AltNames("version-short", "version-s"),
 		param.SeeAlso(paramNameVersionPart),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
+		param.GroupName(GroupName),
 	)
 
+	modFilterMap := map[string]bool{}
+	ps.Add(paramNameVersionModuleFltr,
+		psetter.Map[string]{Value: &modFilterMap},
+		"only those module paths matching the given patterns will be"+
+			" shown. Note that the patterns are Regular Expressions (RE)"+
+			" not Glob patterns. It is an error if the RE will not compile."+
+			" If there are no filters given then any value will match."+
+			"\n\n"+
+			"If the value ends in '=false' then the sense is reversed"+
+			" and only module paths not matching the RE will be shown",
+		param.AltNames("version-mod-fltr", "version-module", "version-mod"),
+		param.SeeAlso(paramNameVersionPart),
+		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
+		param.GroupName(GroupName),
+	)
+
+	bldFilterMap := map[string]bool{}
+	ps.Add(paramNameVersionBuildFltr,
+		psetter.Map[string]{Value: &bldFilterMap},
+		"only those Build Setting Keys matching the given patterns will be"+
+			" shown. Note that the patterns are Regular Expressions (RE)"+
+			" not Glob patterns. It is an error if the RE will not compile."+
+			" If there are no filters given then any value will match."+
+			"\n\n"+
+			"If the value ends in '=false' then the sense is reversed"+
+			" and only Build Setting Keys not matching the RE will be shown",
+		param.AltNames("version-bld-fltr", "version-build-key", "version-bk"),
+		param.SeeAlso(paramNameVersionPart),
+		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
+		param.GroupName(GroupName),
+	)
+
+	filterErrCount := 0
 	ps.AddFinalCheck(func() error {
-		if shortDisplay && len(vsnPart) == 0 {
-			vsnPart = append(vsnPart, vpMain)
+		var errs []error
+		showVsn.modFilts, errs = makeFilterFromMap(modFilterMap)
+		filterErrCount += len(errs)
+		if len(errs) > 0 {
+			ps.AddErr("Bad Version Module Path filters", errs...)
 		}
+		return nil
+	})
+	ps.AddFinalCheck(func() error {
+		var errs []error
+		showVsn.bldFilts, errs = makeFilterFromMap(bldFilterMap)
+		filterErrCount += len(errs)
+		if len(errs) > 0 {
+			ps.AddErr("Bad Version Build Key filters", errs...)
+		}
+		return nil
+	})
+
+	ps.AddFinalCheck(func() error {
+		if filterErrCount > 0 {
+			return nil
+		}
+
+		if showVsn.modFilts.HasFilters() &&
+			!slices.Contains(showVsn.parts, vpMods) {
+			showVsn.parts = append(showVsn.parts, vpMods)
+		}
+
+		if showVsn.bldFilts.HasFilters() &&
+			!slices.Contains(showVsn.parts, vpSettings) {
+			showVsn.parts = append(showVsn.parts, vpSettings)
+		}
+
+		if showVsn.shortDisplay && len(showVsn.parts) == 0 {
+			showVsn.parts = append(showVsn.parts, vpMain)
+		}
+
 		return showVersion(ps.StdW())
 	})
 
