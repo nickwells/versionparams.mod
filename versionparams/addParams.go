@@ -29,6 +29,11 @@ const (
 
 const GroupName = "version-details"
 
+var (
+	modFilterMap = map[string]bool{}
+	bldFilterMap = map[string]bool{}
+)
+
 // AddParams will add parameters to the passed param.PSet
 func AddParams(ps *param.PSet) error {
 	ps.AddGroup(GroupName,
@@ -111,7 +116,6 @@ func AddParams(ps *param.PSet) error {
 		param.GroupName(GroupName),
 	)
 
-	modFilterMap := map[string]bool{}
 	ps.Add(paramNameVersionModuleFltr,
 		psetter.Map[string]{Value: &modFilterMap},
 		"only those module paths matching the given patterns will be"+
@@ -127,7 +131,6 @@ func AddParams(ps *param.PSet) error {
 		param.GroupName(GroupName),
 	)
 
-	bldFilterMap := map[string]bool{}
 	ps.Add(paramNameVersionBuildFltr,
 		psetter.Map[string]{Value: &bldFilterMap},
 		"only those Build Setting Keys matching the given patterns will be"+
@@ -159,6 +162,12 @@ func AddParams(ps *param.PSet) error {
 		param.GroupName(GroupName),
 	)
 
+	addFinalChecks(ps)
+	return nil
+}
+
+// addFinalChecks adds the final check functions
+func addFinalChecks(ps *param.PSet) {
 	filterErrCount := 0
 	ps.AddFinalCheck(func() error {
 		var errs []error
@@ -204,6 +213,4 @@ func AddParams(ps *param.PSet) error {
 
 		return showVersion(ps.StdW())
 	})
-
-	return nil
 }
