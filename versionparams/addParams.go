@@ -7,9 +7,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var showVsn = struct {
+var vsn = struct {
 	parts        []vsnPartName
 	shortDisplay bool
+	showChecksum bool
 
 	modFilts filter
 	bldFilts filter
@@ -41,6 +42,7 @@ func AddParams(ps *param.PSet) error {
 		paramNameVersionPartShort  = "version-part-short"
 		paramNameVersionModuleFltr = "version-module-filter"
 		paramNameVersionBuildFltr  = "version-build-filter"
+		paramNameVersionShowCkSum  = "version-show-checksum"
 	)
 
 	fullParts := []vsnPartName{
@@ -56,7 +58,7 @@ func AddParams(ps *param.PSet) error {
 			" in the default format",
 		param.PostAction(
 			func(_ location.L, p *param.ByName, _ []string) error {
-				showVsn.parts = append(showVsn.parts, vpMain)
+				vsn.parts = append(vsn.parts, vpMain)
 				return nil
 			}),
 		param.SeeAlso(paramNameVersionPart),
@@ -66,7 +68,7 @@ func AddParams(ps *param.PSet) error {
 
 	ps.Add(paramNameVersionPart,
 		psetter.EnumList[vsnPartName]{
-			Value: &showVsn.parts,
+			Value: &vsn.parts,
 			AllowedVals: psetter.AllowedVals[vsnPartName]{
 				vpGoVsn:    "show the Go version used to make the program",
 				vpPath:     "show the path of the main package",
@@ -95,14 +97,14 @@ func AddParams(ps *param.PSet) error {
 	)
 
 	ps.Add(paramNameVersionPartShort,
-		psetter.Bool{Value: &showVsn.shortDisplay},
+		psetter.Bool{Value: &vsn.shortDisplay},
 		"show the version parts in simplified form, without headings and"+
 			" prompts. This is more useful if you want to use the value"+
 			" as you won't need to strip out the other text. Note that"+
 			" there is no short form of the '"+string(vpRaw)+"' form."+
 			"\n\n"+
 			"If this value is set and no version parts have been"+
-			" chosen, the "+string(vpMain)+" part will be shown",
+			" chosen, the '"+string(vpMain)+"' part will be shown",
 		param.AltNames("version-short", "version-s"),
 		param.SeeAlso(paramNameVersionPart),
 		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
@@ -141,10 +143,26 @@ func AddParams(ps *param.PSet) error {
 		param.GroupName(GroupName),
 	)
 
+	ps.Add(paramNameVersionShowCkSum,
+		psetter.Bool{Value: &vsn.showChecksum},
+		"show module checksums."+
+			" This only changes the appearance of the"+
+			" '"+string(vpMain)+"' and '"+string(vpMods)+"' parts"+
+			" as these are the only parts of the version information"+
+			" that have associated checksums."+
+			"\n\n"+
+			"If this value is set and no version parts have been"+
+			" chosen, the '"+string(vpMain)+"' part will be shown",
+		param.AltNames("version-checksum", "version-cksum"),
+		param.SeeAlso(paramNameVersionPart),
+		param.Attrs(param.CommandLineOnly|param.DontShowInStdUsage),
+		param.GroupName(GroupName),
+	)
+
 	filterErrCount := 0
 	ps.AddFinalCheck(func() error {
 		var errs []error
-		showVsn.modFilts, errs = makeFilterFromMap(modFilterMap)
+		vsn.modFilts, errs = makeFilterFromMap(modFilterMap)
 		filterErrCount += len(errs)
 		if len(errs) > 0 {
 			ps.AddErr("Bad Version Module Path filters", errs...)
@@ -153,7 +171,7 @@ func AddParams(ps *param.PSet) error {
 	})
 	ps.AddFinalCheck(func() error {
 		var errs []error
-		showVsn.bldFilts, errs = makeFilterFromMap(bldFilterMap)
+		vsn.bldFilts, errs = makeFilterFromMap(bldFilterMap)
 		filterErrCount += len(errs)
 		if len(errs) > 0 {
 			ps.AddErr("Bad Version Build Key filters", errs...)
@@ -166,18 +184,22 @@ func AddParams(ps *param.PSet) error {
 			return nil
 		}
 
-		if showVsn.modFilts.HasFilters() &&
-			!slices.Contains(showVsn.parts, vpMods) {
-			showVsn.parts = append(showVsn.parts, vpMods)
+		if vsn.modFilts.HasFilters() &&
+			!slices.Contains(vsn.parts, vpMods) {
+			vsn.parts = append(vsn.parts, vpMods)
 		}
 
-		if showVsn.bldFilts.HasFilters() &&
-			!slices.Contains(showVsn.parts, vpSettings) {
-			showVsn.parts = append(showVsn.parts, vpSettings)
+		if vsn.bldFilts.HasFilters() &&
+			!slices.Contains(vsn.parts, vpSettings) {
+			vsn.parts = append(vsn.parts, vpSettings)
 		}
 
-		if showVsn.shortDisplay && len(showVsn.parts) == 0 {
-			showVsn.parts = append(showVsn.parts, vpMain)
+		if vsn.shortDisplay && len(vsn.parts) == 0 {
+			vsn.parts = append(vsn.parts, vpMain)
+		}
+
+		if vsn.showChecksum && len(vsn.parts) == 0 {
+			vsn.parts = append(vsn.parts, vpMain)
 		}
 
 		return showVersion(ps.StdW())
