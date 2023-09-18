@@ -169,22 +169,20 @@ func AddParams(ps *param.PSet) error {
 // addFinalChecks adds the final check functions
 func addFinalChecks(ps *param.PSet) {
 	filterErrCount := 0
+
 	ps.AddFinalCheck(func() error {
 		var errs []error
 		vsn.modFilts, errs = makeFilterFromMap(modFilterMap)
 		filterErrCount += len(errs)
-		if len(errs) > 0 {
-			ps.AddErr("Bad Version Module Path filters", errs...)
-		}
+		ps.AddErr("Bad Version Module Path filters", errs...)
 		return nil
 	})
+
 	ps.AddFinalCheck(func() error {
 		var errs []error
 		vsn.bldFilts, errs = makeFilterFromMap(bldFilterMap)
 		filterErrCount += len(errs)
-		if len(errs) > 0 {
-			ps.AddErr("Bad Version Build Key filters", errs...)
-		}
+		ps.AddErr("Bad Version Build Key filters", errs...)
 		return nil
 	})
 
@@ -203,11 +201,7 @@ func addFinalChecks(ps *param.PSet) {
 			vsn.parts = append(vsn.parts, vpSettings)
 		}
 
-		if vsn.shortDisplay && len(vsn.parts) == 0 {
-			vsn.parts = append(vsn.parts, vpMain)
-		}
-
-		if vsn.showChecksum && len(vsn.parts) == 0 {
+		if (vsn.shortDisplay || vsn.showChecksum) && len(vsn.parts) == 0 {
 			vsn.parts = append(vsn.parts, vpMain)
 		}
 

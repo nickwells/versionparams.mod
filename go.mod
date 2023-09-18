@@ -7,7 +7,7 @@ toolchain go1.21.0
 require (
 	github.com/nickwells/col.mod/v3 v3.0.16
 	github.com/nickwells/location.mod v1.2.27
-	github.com/nickwells/param.mod/v6 v6.0.0
+	github.com/nickwells/param.mod/v6 v6.0.1
 	github.com/nickwells/testhelper.mod/v2 v2.3.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 )
