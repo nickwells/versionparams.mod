@@ -51,10 +51,10 @@ func AddParams(ps *param.PSet) error {
 	)
 
 	fullParts := []vsnPartName{
-		vpGoVsn,
-		vpPath,
 		vpMain,
+		vpPath,
 		vpMods,
+		vpGoVsn,
 		vpSettings,
 	}
 
