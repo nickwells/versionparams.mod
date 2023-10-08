@@ -7,9 +7,9 @@ toolchain go1.21.0
 require (
 	github.com/nickwells/col.mod/v3 v3.0.17
 	github.com/nickwells/location.mod v1.2.27
-	github.com/nickwells/param.mod/v6 v6.1.1
+	github.com/nickwells/param.mod/v6 v6.1.3
 	github.com/nickwells/testhelper.mod/v2 v2.3.0
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 )
 
 require github.com/nickwells/tempus.mod v1.1.0 // indirect
@@ -25,6 +25,6 @@ require (
 	github.com/nickwells/strdist.mod v1.1.13 // indirect
 	github.com/nickwells/twrap.mod v1.5.4 // indirect
 	github.com/nickwells/xdg.mod v1.0.9 // indirect
-	golang.org/x/sys v0.12.0 // indirect
-	golang.org/x/term v0.12.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
 )
