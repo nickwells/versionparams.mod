@@ -7,8 +7,8 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/nickwells/col.mod/v3/col"
-	"github.com/nickwells/col.mod/v3/col/colfmt"
+	"github.com/nickwells/col.mod/v4/col"
+	"github.com/nickwells/col.mod/v4/colfmt"
 )
 
 const replIntro = "   "
@@ -54,12 +54,12 @@ func depCols(bi *debug.BuildInfo) []*col.Col {
 	}
 
 	cols := []*col.Col{
-		col.New(&colfmt.String{W: colWidthPath}, "Path"),
-		col.New(&colfmt.String{W: colWidthVersion}, "Version"),
+		col.New(&colfmt.String{W: uint(colWidthPath)}, "Path"),
+		col.New(&colfmt.String{W: uint(colWidthVersion)}, "Version"),
 	}
 	if vsn.showChecksum {
 		cols = append(cols,
-			col.New(&colfmt.String{W: colWidthSum}, "CheckSum"))
+			col.New(&colfmt.String{W: uint(colWidthSum)}, "CheckSum"))
 	}
 
 	return cols
@@ -122,7 +122,7 @@ func showModules(w io.Writer, bi *debug.BuildInfo) {
 		col.HdrOptDontPrint(hdr)
 	}
 
-	rpt := col.NewReport(hdr, w,
+	rpt := col.NewReportOrPanic(hdr, w,
 		col.New(&colfmt.String{}, "Type"), depCols(bi)...)
 
 	if vsn.modFilts.Passes(bi.Main.Path) {
@@ -171,8 +171,8 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 		keyJust = col.Left
 	}
 
-	rpt := col.NewReport(hdr, w,
-		col.New(&colfmt.String{StrJust: keyJust, W: maxKey}, "Key"),
+	rpt := col.NewReportOrPanic(hdr, w,
+		col.New(&colfmt.String{StrJust: keyJust, W: uint(maxKey)}, "Key"),
 		col.New(&colfmt.String{}, "Value"))
 
 	for _, s := range bi.Settings {
