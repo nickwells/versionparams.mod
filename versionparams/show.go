@@ -18,6 +18,7 @@ func showPrompt(w io.Writer, prompt string) {
 	if vsn.shortDisplay {
 		return
 	}
+
 	fmt.Fprint(w, prompt)
 }
 
@@ -29,24 +30,30 @@ func depCols(bi *debug.BuildInfo) []*col.Col {
 		colWidthVersion = len(bi.Main.Version)
 		colWidthSum     = len(bi.Main.Sum)
 	)
+
 	for _, d := range bi.Deps {
 		if colWidthPath < len(d.Path) {
 			colWidthPath = len(d.Path)
 		}
+
 		if colWidthVersion < len(d.Version) {
 			colWidthVersion = len(d.Version)
 		}
+
 		if colWidthSum < len(d.Sum) {
 			colWidthSum = len(d.Sum)
 		}
+
 		if d.Replace != nil {
 			replPathLen := len(d.Replace.Path) + len(replIntro)
 			if colWidthPath < replPathLen {
 				colWidthPath = replPathLen
 			}
+
 			if colWidthVersion < len(d.Replace.Version) {
 				colWidthVersion = len(d.Replace.Version)
 			}
+
 			if colWidthSum < len(d.Replace.Sum) {
 				colWidthSum = len(d.Replace.Sum)
 			}
@@ -54,12 +61,13 @@ func depCols(bi *debug.BuildInfo) []*col.Col {
 	}
 
 	cols := []*col.Col{
-		col.New(&colfmt.String{W: uint(colWidthPath)}, "Path"),
-		col.New(&colfmt.String{W: uint(colWidthVersion)}, "Version"),
+		col.New(&colfmt.String{W: uint(colWidthPath)}, "Path"),       //nolint:gosec
+		col.New(&colfmt.String{W: uint(colWidthVersion)}, "Version"), //nolint:gosec
 	}
+
 	if vsn.showChecksum {
 		cols = append(cols,
-			col.New(&colfmt.String{W: uint(colWidthSum)}, "CheckSum"))
+			col.New(&colfmt.String{W: uint(colWidthSum)}, "CheckSum")) //nolint:gosec
 	}
 
 	return cols
@@ -87,10 +95,12 @@ func showMain(w io.Writer, bi *debug.BuildInfo) {
 	if !vsn.showChecksum {
 		sum = ""
 	}
+
 	if sum != "" {
 		prompt += ", Checksum"
 		sum = ", " + sum
 	}
+
 	prompt += ": "
 	showPrompt(w, prompt)
 
@@ -154,10 +164,12 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 	showPrompt(w, "Build Settings:\n")
 
 	maxKey := 0
+
 	for _, s := range bi.Settings {
 		if !vsn.bldFilts.Passes(s.Key) {
 			continue
 		}
+
 		if len(s.Key) > maxKey {
 			maxKey = len(s.Key)
 		}
@@ -172,14 +184,18 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 	}
 
 	rpt := col.NewReportOrPanic(hdr, w,
-		col.New(&colfmt.String{StrJust: keyJust, W: uint(maxKey)}, "Key"),
+		col.New(&colfmt.String{
+			StrJust: keyJust,
+			W:       uint(maxKey)}, //nolint:gosec
+			"Key"),
 		col.New(&colfmt.String{}, "Value"))
 
 	for _, s := range bi.Settings {
 		if !vsn.bldFilts.Passes(s.Key) {
 			continue
 		}
-		_ = rpt.PrintRow(s.Key, s.Value)
+
+		rpt.PrintRow(s.Key, s.Value) //nolint:errcheck
 	}
 }
 
@@ -219,10 +235,13 @@ func showVersion(w io.Writer) error {
 		if shown[part] {
 			continue
 		}
+
 		shown[part] = true
 
 		var f versionPartShowFunc
+
 		var ok bool
+
 		if f, ok = vsnPartShowFuncMap[part]; !ok {
 			return errors.New("bad version part: " + string(part))
 		}
@@ -231,5 +250,6 @@ func showVersion(w io.Writer) error {
 	}
 
 	os.Exit(0)
+
 	return nil
 }

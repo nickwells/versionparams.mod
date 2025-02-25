@@ -19,6 +19,7 @@ type filter struct {
 func makeFilterFromMap(filterMap map[string]bool) (filter, []error) {
 	f := filter{}
 	errs := []error{}
+
 	for filter, mustMatch := range filterMap {
 		re, err := regexp.Compile(filter)
 		if err != nil {
@@ -83,6 +84,7 @@ func (f filter) Passes(val string) bool {
 		if !match {
 			break
 		}
+
 		match = !re.MatchString(val)
 	}
 

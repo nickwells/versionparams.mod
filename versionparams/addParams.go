@@ -62,7 +62,7 @@ func AddParams(ps *param.PSet) error {
 		"show the complete version details for this program"+
 			" in the default format",
 		param.PostAction(
-			func(_ location.L, p *param.ByName, _ []string) error {
+			func(_ location.L, _ *param.ByName, _ []string) error {
 				vsn.parts = append(vsn.parts, vpMain)
 				return nil
 			}),
@@ -163,6 +163,7 @@ func AddParams(ps *param.PSet) error {
 	)
 
 	addFinalChecks(ps)
+
 	return nil
 }
 
@@ -175,6 +176,7 @@ func addFinalChecks(ps *param.PSet) {
 		vsn.modFilts, errs = makeFilterFromMap(modFilterMap)
 		filterErrCount += len(errs)
 		ps.AddErr("Bad Version Module Path filters", errs...)
+
 		return nil
 	})
 
@@ -183,6 +185,7 @@ func addFinalChecks(ps *param.PSet) {
 		vsn.bldFilts, errs = makeFilterFromMap(bldFilterMap)
 		filterErrCount += len(errs)
 		ps.AddErr("Bad Version Build Key filters", errs...)
+
 		return nil
 	})
 
