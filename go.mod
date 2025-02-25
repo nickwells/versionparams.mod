@@ -1,8 +1,6 @@
 module github.com/nickwells/versionparams.mod
 
-go 1.21
-
-toolchain go1.21.0
+go 1.24
 
 require (
 	github.com/nickwells/col.mod/v4 v4.0.0
