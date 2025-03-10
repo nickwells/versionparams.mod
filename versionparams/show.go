@@ -184,9 +184,11 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 	}
 
 	rpt := col.NewReportOrPanic(hdr, w,
-		col.New(&colfmt.String{
-			StrJust: keyJust,
-			W:       uint(maxKey)}, //nolint:gosec
+		col.New(
+			&colfmt.String{
+				StrJust: keyJust,
+				W:       uint(maxKey), //nolint:gosec
+			},
 			"Key"),
 		col.New(&colfmt.String{}, "Value"))
 
