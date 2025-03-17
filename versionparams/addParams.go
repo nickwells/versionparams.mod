@@ -1,10 +1,11 @@
 package versionparams
 
 import (
+	"slices"
+
 	"github.com/nickwells/location.mod/location"
 	"github.com/nickwells/param.mod/v6/param"
 	"github.com/nickwells/param.mod/v6/psetter"
-	"golang.org/x/exp/slices"
 )
 
 var vsn = struct {
