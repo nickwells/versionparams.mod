@@ -8,6 +8,8 @@ import (
 	"github.com/nickwells/param.mod/v6/psetter"
 )
 
+type vsnPartName string
+
 var vsn = struct {
 	parts        []vsnPartName
 	shortDisplay bool
@@ -16,8 +18,6 @@ var vsn = struct {
 	modFilts filter
 	bldFilts filter
 }{}
-
-type vsnPartName string
 
 const (
 	vpGoVsn    vsnPartName = "go-version"
@@ -28,6 +28,8 @@ const (
 	vpRaw      vsnPartName = "raw"
 )
 
+// GroupName is the name of the parameter group in which the parameters are
+// added
 const GroupName = "version-details"
 
 var (
