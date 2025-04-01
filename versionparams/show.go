@@ -117,6 +117,17 @@ func printModRow(rpt *col.Report, mType, path string, m *debug.Module) {
 	}
 }
 
+// makeColHdr creates a col.Header reflecting the value of the
+// vsn.shortDisplay flag
+func makeColHdr() *col.Header {
+	opts := []col.HdrOptionFunc{}
+	if vsn.shortDisplay {
+		opts = append(opts, col.HdrOptDontPrint)
+	}
+
+	return col.NewHeaderOrPanic(opts...)
+}
+
 // showModules shows the module details of this executable
 func showModules(w io.Writer, bi *debug.BuildInfo) {
 	const (
@@ -127,12 +138,7 @@ func showModules(w io.Writer, bi *debug.BuildInfo) {
 
 	showPrompt(w, "Modules:\n")
 
-	hdr := col.NewHeaderOrPanic()
-	if vsn.shortDisplay {
-		col.HdrOptDontPrint(hdr)
-	}
-
-	rpt := col.NewReportOrPanic(hdr, w,
+	rpt := col.NewReportOrPanic(makeColHdr(), w,
 		col.New(&colfmt.String{}, "Type"), depCols(bi)...)
 
 	if vsn.modFilts.Passes(bi.Main.Path) {
@@ -176,14 +182,11 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 	}
 
 	keyJust := col.Right
-
-	hdr := col.NewHeaderOrPanic()
 	if vsn.shortDisplay {
-		col.HdrOptDontPrint(hdr)
 		keyJust = col.Left
 	}
 
-	rpt := col.NewReportOrPanic(hdr, w,
+	rpt := col.NewReportOrPanic(makeColHdr(), w,
 		col.New(
 			&colfmt.String{
 				StrJust: keyJust,
@@ -209,8 +212,8 @@ func showRaw(w io.Writer, bi *debug.BuildInfo) {
 // showVersion shows the version details, if specific parts have been
 // requested then just those parts are shown otherwise the full default
 // version info is displayed. Note that unless there is a problem retrieving
-// the BuildInfo or an unknown part is requested then this will exit with
-// status 0.
+// the BuildInfo or an unknown part is requested then this will return a
+// non-nil error
 func showVersion(w io.Writer) error {
 	type versionPartShowFunc func(io.Writer, *debug.BuildInfo)
 
@@ -229,7 +232,7 @@ func showVersion(w io.Writer) error {
 
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return errors.New("Build information not available")
+		return errors.New("the build information is not available")
 	}
 
 	shown := make(map[vsnPartName]bool, len(vsn.parts))
