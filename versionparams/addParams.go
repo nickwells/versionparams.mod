@@ -176,6 +176,7 @@ func addFinalChecks(ps *param.PSet) {
 
 	ps.AddFinalCheck(func() error {
 		var errs []error
+
 		vsn.modFilts, errs = makeFilterFromMap(modFilterMap)
 		filterErrCount += len(errs)
 		ps.AddErr("Bad Version Module Path filters", errs...)
@@ -185,6 +186,7 @@ func addFinalChecks(ps *param.PSet) {
 
 	ps.AddFinalCheck(func() error {
 		var errs []error
+
 		vsn.bldFilts, errs = makeFilterFromMap(bldFilterMap)
 		filterErrCount += len(errs)
 		ps.AddErr("Bad Version Build Key filters", errs...)
