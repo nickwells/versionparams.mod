@@ -169,16 +169,14 @@ func showModules(w io.Writer, bi *debug.BuildInfo) {
 func showSettings(w io.Writer, bi *debug.BuildInfo) {
 	showPrompt(w, "Build Settings:\n")
 
-	maxKey := 0
+	maxKeyLen := 0
 
 	for _, s := range bi.Settings {
 		if !vsn.bldFilts.Passes(s.Key) {
 			continue
 		}
 
-		if len(s.Key) > maxKey {
-			maxKey = len(s.Key)
-		}
+		maxKeyLen = max(len(s.Key), maxKeyLen)
 	}
 
 	keyJust := col.Right
@@ -190,7 +188,7 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 		col.New(
 			&colfmt.String{
 				StrJust: keyJust,
-				W:       uint(maxKey), //nolint:gosec
+				W:       uint(maxKeyLen), //nolint:gosec
 			},
 			"Key"),
 		col.New(&colfmt.String{}, "Value"))
