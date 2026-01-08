@@ -7,8 +7,8 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/nickwells/col.mod/v5/col"
-	"github.com/nickwells/col.mod/v5/colfmt"
+	"github.com/nickwells/col.mod/v6/col"
+	"github.com/nickwells/col.mod/v6/colfmt"
 )
 
 const replIntro = "   "
@@ -61,13 +61,13 @@ func depCols(bi *debug.BuildInfo) []*col.Col {
 	}
 
 	cols := []*col.Col{
-		col.New(&colfmt.String{W: uint(colWidthPath)}, "Path"),       //nolint:gosec
-		col.New(&colfmt.String{W: uint(colWidthVersion)}, "Version"), //nolint:gosec
+		col.New(&colfmt.String{W: colWidthPath}, "Path"),
+		col.New(&colfmt.String{W: colWidthVersion}, "Version"),
 	}
 
 	if vsn.showChecksum {
 		cols = append(cols,
-			col.New(&colfmt.String{W: uint(colWidthSum)}, "CheckSum")) //nolint:gosec
+			col.New(&colfmt.String{W: colWidthSum}, "CheckSum"))
 	}
 
 	return cols
@@ -185,12 +185,7 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 	}
 
 	rpt := col.NewReportOrPanic(makeColHdr(), w,
-		col.New(
-			&colfmt.String{
-				StrJust: keyJust,
-				W:       uint(maxKeyLen), //nolint:gosec
-			},
-			"Key"),
+		col.New(&colfmt.String{StrJust: keyJust, W: maxKeyLen}, "Key"),
 		col.New(&colfmt.String{}, "Value"))
 
 	for _, s := range bi.Settings {
