@@ -3,7 +3,6 @@ package versionparams
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"runtime/debug"
 
@@ -14,12 +13,12 @@ import (
 const replIntro = "   "
 
 // showPrompt prints the prompt if the shortDisplay flag is not set
-func showPrompt(w io.Writer, prompt string) {
+func showPrompt(prompt string) {
 	if vsn.shortDisplay {
 		return
 	}
 
-	fmt.Fprint(w, prompt)
+	fmt.Print(prompt)
 }
 
 // depCols returns a set of columns for the modules section of the report
@@ -74,21 +73,21 @@ func depCols(bi *debug.BuildInfo) []*col.Col {
 }
 
 // showGoVersion shows the Go Version used to build this executable
-func showGoVersion(w io.Writer, bi *debug.BuildInfo) {
-	showPrompt(w, "Built with Go Version: ")
+func showGoVersion(bi *debug.BuildInfo) {
+	showPrompt("Built with Go Version: ")
 
-	fmt.Fprintln(w, bi.GoVersion)
+	fmt.Println(bi.GoVersion)
 }
 
 // showPath shows the Path of this executable
-func showPath(w io.Writer, bi *debug.BuildInfo) {
-	showPrompt(w, "Path: ")
+func showPath(bi *debug.BuildInfo) {
+	showPrompt("Path: ")
 
-	fmt.Fprintln(w, bi.Path)
+	fmt.Println(bi.Path)
 }
 
 // showMain shows the details of the main module of this executable
-func showMain(w io.Writer, bi *debug.BuildInfo) {
+func showMain(bi *debug.BuildInfo) {
 	prompt := "Version"
 
 	sum := bi.Main.Sum
@@ -102,9 +101,9 @@ func showMain(w io.Writer, bi *debug.BuildInfo) {
 	}
 
 	prompt += ": "
-	showPrompt(w, prompt)
+	showPrompt(prompt)
 
-	fmt.Fprintln(w, bi.Main.Version+sum)
+	fmt.Println(bi.Main.Version + sum)
 }
 
 // printModRow prints the report row for the supplied module taking into
@@ -129,16 +128,16 @@ func makeColHdr() *col.Header {
 }
 
 // showModules shows the module details of this executable
-func showModules(w io.Writer, bi *debug.BuildInfo) {
+func showModules(bi *debug.BuildInfo) {
 	const (
 		modTypeDep  = "D"
 		modTypeRepl = "r"
 		modTypeMain = "M"
 	)
 
-	showPrompt(w, "Modules:\n")
+	showPrompt("Modules:\n")
 
-	rpt := col.NewReportOrPanic(makeColHdr(), w,
+	rpt := col.NewReportOrPanic(makeColHdr(), os.Stdout,
 		col.New(&colfmt.String{}, "Type"), depCols(bi)...)
 
 	if vsn.modFilts.Passes(bi.Main.Path) {
@@ -166,8 +165,8 @@ func showModules(w io.Writer, bi *debug.BuildInfo) {
 }
 
 // showSettings shows the build settings of this executable
-func showSettings(w io.Writer, bi *debug.BuildInfo) {
-	showPrompt(w, "Build Settings:\n")
+func showSettings(bi *debug.BuildInfo) {
+	showPrompt("Build Settings:\n")
 
 	maxKeyLen := 0
 
@@ -184,7 +183,7 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 		keyJust = col.Left
 	}
 
-	rpt := col.NewReportOrPanic(makeColHdr(), w,
+	rpt := col.NewReportOrPanic(makeColHdr(), os.Stdout,
 		col.New(&colfmt.String{StrJust: keyJust, W: maxKeyLen}, "Key"),
 		col.New(&colfmt.String{}, "Value"))
 
@@ -198,8 +197,8 @@ func showSettings(w io.Writer, bi *debug.BuildInfo) {
 }
 
 // showRaw shows the build info in raw form
-func showRaw(w io.Writer, bi *debug.BuildInfo) {
-	fmt.Fprintln(w, bi)
+func showRaw(bi *debug.BuildInfo) {
+	fmt.Println(bi)
 }
 
 // showVersion shows the version details, if specific parts have been
@@ -207,8 +206,8 @@ func showRaw(w io.Writer, bi *debug.BuildInfo) {
 // version info is displayed. Note that unless there is a problem retrieving
 // the BuildInfo or an unknown part is requested then this will return a
 // non-nil error
-func showVersion(w io.Writer) error {
-	type versionPartShowFunc func(io.Writer, *debug.BuildInfo)
+func showVersion() error {
+	type versionPartShowFunc func(*debug.BuildInfo)
 
 	vsnPartShowFuncMap := map[vsnPartName]versionPartShowFunc{
 		vpGoVsn:    showGoVersion,
@@ -236,15 +235,15 @@ func showVersion(w io.Writer) error {
 
 		shown[part] = true
 
-		var f versionPartShowFunc
+		var showFunc versionPartShowFunc
 
 		var ok bool
 
-		if f, ok = vsnPartShowFuncMap[part]; !ok {
+		if showFunc, ok = vsnPartShowFuncMap[part]; !ok {
 			return errors.New("bad version part: " + string(part))
 		}
 
-		f(w, bi)
+		showFunc(bi)
 	}
 
 	os.Exit(0)
