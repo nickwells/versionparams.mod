@@ -65,7 +65,7 @@ func AddParams(ps *param.PSet) error {
 		"show the complete version details for this program"+
 			" in the default format",
 		param.PostAction(
-			func(_ location.L, _ *param.ByName, _ []string) error {
+			func(_ location.L, _ *param.BaseParam, _ []string) error {
 				vsn.parts = append(vsn.parts, vpMain)
 				return nil
 			}),
