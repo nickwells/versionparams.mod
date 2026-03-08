@@ -3,9 +3,9 @@ module github.com/nickwells/versionparams.mod
 go 1.25.0
 
 require (
-	github.com/nickwells/col.mod/v6 v6.0.1
+	github.com/nickwells/col.mod/v6 v6.0.2
 	github.com/nickwells/location.mod v1.2.34
-	github.com/nickwells/param.mod/v7 v7.0.0
+	github.com/nickwells/param.mod/v7 v7.0.1
 	github.com/nickwells/testhelper.mod/v2 v2.4.3
 )
 
@@ -25,6 +25,6 @@ require (
 	github.com/nickwells/twrap.mod v1.5.12 // indirect
 	github.com/nickwells/xdg.mod v1.0.10 // indirect
 	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
-	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/term v0.40.0 // indirect
 )
