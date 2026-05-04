@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/nickwells/col.mod/v6 v6.1.1
 	github.com/nickwells/location.mod v1.2.37
-	github.com/nickwells/param.mod/v7 v7.2.1
+	github.com/nickwells/param.mod/v7 v7.2.2
 	github.com/nickwells/testhelper.mod/v2 v2.6.1
 )
 
