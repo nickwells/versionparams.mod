@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/nickwells/col.mod/v6 v6.1.1
 	github.com/nickwells/location.mod v1.2.37
-	github.com/nickwells/param.mod/v7 v7.2.2
+	github.com/nickwells/param.mod/v7 v7.2.3
 	github.com/nickwells/testhelper.mod/v2 v2.6.1
 )
 
@@ -24,7 +24,7 @@ require (
 	github.com/nickwells/pager.mod v1.1.0 // indirect
 	github.com/nickwells/twrap.mod v1.5.14 // indirect
 	github.com/nickwells/xdg.mod v1.0.12 // indirect
-	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/term v0.42.0 // indirect
+	golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/term v0.43.0 // indirect
 )
